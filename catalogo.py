@@ -1,10 +1,10 @@
-# catalogo.py - Versión simple con grid y actualización al redimensionar
+# catalogo.py - Colores PlayStation 3
 
 import tkinter as tk
 from tkinter import Toplevel, messagebox
 from tkinter import ttk
 from PIL import Image, ImageTk
-import io
+import os
 from conexion import Comunicacion
 
 class CatalogoJuegos:
@@ -18,7 +18,19 @@ class CatalogoJuegos:
         self.root.title("Catálogo de Juegos PS3")
         self.root.geometry("800x500")
         self.root.minsize(400, 400)
-        self.root.config(bg="#1D0A85")
+        
+        # ==== COLORES PLAYSTATION 3 ====
+        self.color_ps3_azul = "#003087"      # Azul PS3
+        self.color_ps3_azul_medio = "#0055a4" # Azul medio
+        self.color_ps3_azul_claro = "#0070cc" # Azul claro
+        self.color_ps3_gris = "#1a1a1a"      # Gris oscuro
+        self.color_ps3_gris_claro = "#2a2a2a" # Gris medio
+        self.color_ps3_texto = "#ffffff"     # Blanco
+        self.color_ps3_texto_sec = "#999999" # Gris claro
+        self.color_ps3_plateado = "#c0c0c0"  # Plateado
+        self.color_ps3_borde = "#0055a4"     # Borde azul
+        
+        self.root.config(bg=self.color_ps3_azul)
         
         # Configurar grids principales
         self.root.grid_rowconfigure(2, weight=1)
@@ -41,29 +53,53 @@ class CatalogoJuegos:
     
     def setup_search_frame(self):
         """Configura el frame de búsqueda"""
-        search_frame = tk.Frame(self.root, bg="#464545")
+        search_frame = tk.Frame(self.root, bg=self.color_ps3_gris)
         search_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
         search_frame.grid_columnconfigure(0, weight=1)
         
         self.search_entry = ttk.Entry(search_frame, width=50, font=("Arial", 12))
         self.search_entry.grid(row=0, column=0, padx=5, sticky="ew")
         
-        btn_buscar = ttk.Button(search_frame, text="🔍 Buscar", command=self.buscar_juegos_por_titulo)
+        btn_buscar = tk.Button(
+            search_frame, 
+            text="🔍 Buscar", 
+            command=self.buscar_juegos_por_titulo,
+            bg=self.color_ps3_azul_claro,
+            fg=self.color_ps3_texto,
+            font=("Arial", 10, "bold"),
+            padx=10,
+            relief="flat",
+            activebackground=self.color_ps3_azul_medio,
+            activeforeground=self.color_ps3_texto
+        )
         btn_buscar.grid(row=0, column=1, padx=5)
     
     def setup_menu_frame(self):
         """Configura el frame del menú"""
-        menu_frame = tk.Frame(self.root, bg="#121212")
+        menu_frame = tk.Frame(self.root, bg=self.color_ps3_gris)
         menu_frame.grid(row=1, column=0, sticky="ew", padx=10, pady=5)
         
         # Botón Inicio
-        btn_inicio = ttk.Button(menu_frame, text="🏠 Inicio", command=self.ir_a_inicio)
+        btn_inicio = tk.Button(
+            menu_frame, 
+            text="🏠 Inicio", 
+            command=self.ir_a_inicio,
+            bg=self.color_ps3_azul_claro,
+            fg=self.color_ps3_texto,
+            font=("Arial", 10, "bold"),
+            padx=10,
+            relief="flat",
+            activebackground=self.color_ps3_azul_medio,
+            activeforeground=self.color_ps3_texto
+        )
         btn_inicio.pack(side=tk.LEFT, padx=5)
         
         # Géneros
         generos = self.comunicacion.obtener_generos()
         self.categoria_var = tk.StringVar(self.root)
         self.categoria_var.set(generos[0] if generos else "Todos")
+        
+        # Estilo para OptionMenu
         self.categoria_menu = ttk.OptionMenu(menu_frame, self.categoria_var, *generos, command=self.cargar_juegos_por_genero)
         self.categoria_menu.pack(side=tk.LEFT, padx=5)
         
@@ -74,19 +110,49 @@ class CatalogoJuegos:
         self.anio_menu = ttk.OptionMenu(menu_frame, self.anio_var, *años)
         self.anio_menu.pack(side=tk.LEFT, padx=5)
         
-        btn_buscar_anio = ttk.Button(menu_frame, text="📅 Buscar por Año", command=self.buscar_juegos_por_anio)
+        btn_buscar_anio = tk.Button(
+            menu_frame, 
+            text="📅 Buscar por Año", 
+            command=self.buscar_juegos_por_anio,
+            bg=self.color_ps3_azul_claro,
+            fg=self.color_ps3_texto,
+            font=("Arial", 10, "bold"),
+            padx=10,
+            relief="flat",
+            activebackground=self.color_ps3_azul_medio,
+            activeforeground=self.color_ps3_texto
+        )
         btn_buscar_anio.pack(side=tk.LEFT, padx=5)
+
+        # BOTÓN SALIR
+        btn_salir = tk.Button(
+            menu_frame, 
+        text="❌ Salir", 
+        command=self.salir_aplicacion,
+        bg="#cc0000",  # Rojo para destacar
+        fg=self.color_ps3_texto,
+        font=("Arial", 10, "bold"),
+        padx=15,
+        relief="flat",
+        activebackground="#990000",
+        activeforeground=self.color_ps3_texto
+        )
+        btn_salir.pack(side=tk.RIGHT, padx=5)
     
     def setup_scrollable_frame(self):
         """Configura el frame con scrollbar para los juegos"""
         # Frame contenedor principal
-        self.container_frame = tk.Frame(self.root, bg="#121212")
+        self.container_frame = tk.Frame(self.root, bg=self.color_ps3_gris)
         self.container_frame.grid(row=2, column=0, sticky="nsew", padx=10, pady=10)
         self.container_frame.grid_rowconfigure(0, weight=1)
         self.container_frame.grid_columnconfigure(0, weight=1)
         
         # Canvas para el scroll
-        self.canvas = tk.Canvas(self.container_frame, bg="#121212", highlightthickness=0)
+        self.canvas = tk.Canvas(
+            self.container_frame, 
+            bg=self.color_ps3_gris, 
+            highlightthickness=0
+        )
         self.canvas.grid(row=0, column=0, sticky="nsew")
         
         # Scrollbar vertical
@@ -97,7 +163,7 @@ class CatalogoJuegos:
         self.canvas.configure(yscrollcommand=self.scrollbar.set)
         
         # Frame interior donde se colocarán los juegos
-        self.juegos_frame = tk.Frame(self.canvas, bg="#121212")
+        self.juegos_frame = tk.Frame(self.canvas, bg=self.color_ps3_gris)
         
         # Crear ventana en el canvas
         self.canvas_window = self.canvas.create_window((0, 0), window=self.juegos_frame, anchor="nw")
@@ -152,8 +218,10 @@ class CatalogoJuegos:
         self.juegos_frame.bind("<Button-4>", _on_mousewheel_linux)
         self.juegos_frame.bind("<Button-5>", _on_mousewheel_linux)
     
+    # ============ MÉTODOS DE CARGA DE JUEGOS ============
+    
     def mostrar_juegos(self, juegos):
-        """Método unificado para mostrar juegos en la interfaz"""
+        """Muestra los juegos en la interfaz"""
         # Guardar los juegos actuales
         self.ultimos_juegos = juegos
         
@@ -162,8 +230,13 @@ class CatalogoJuegos:
             widget.destroy()
         
         if not juegos:
-            tk.Label(self.juegos_frame, text="📭 No hay juegos disponibles.", 
-                    font=("Arial", 14), fg="#888888", bg="#121212").pack(expand=True, pady=50)
+            tk.Label(
+                self.juegos_frame, 
+                text="📭 No hay juegos disponibles.", 
+                font=("Arial", 14), 
+                fg=self.color_ps3_texto_sec, 
+                bg=self.color_ps3_gris
+            ).pack(expand=True, pady=50)
             return
         
         # Calcular cuántas tarjetas caben por fila
@@ -187,11 +260,15 @@ class CatalogoJuegos:
             fila = i // tarjetas_por_fila
             columna = i % tarjetas_por_fila
             
+            # juego = (id, titulo, descripcion, anio, precio, imagen_ruta, generos)
             juego_frame = tk.Frame(
                 self.juegos_frame, 
-                bg="#1F1F1F", 
+                bg=self.color_ps3_gris_claro, 
                 relief="ridge", 
-                bd=2
+                bd=2,
+                highlightbackground=self.color_ps3_azul_medio,
+                highlightcolor=self.color_ps3_azul_medio,
+                highlightthickness=1
             )
             juego_frame.grid(
                 row=fila, 
@@ -207,8 +284,8 @@ class CatalogoJuegos:
                 juego_frame, 
                 text=titulo_texto, 
                 font=("Arial", 10, "bold"), 
-                fg="#FFFFFF", 
-                bg="#1F1F1F",
+                fg=self.color_ps3_texto, 
+                bg=self.color_ps3_gris_claro,
                 wraplength=150
             )
             titulo.pack(pady=(5,0))
@@ -216,22 +293,26 @@ class CatalogoJuegos:
             # Año
             año_label = tk.Label(
                 juego_frame, 
-                text=f"📅 {juego[5] if juego[5] else 'N/A'}", 
+                text=f"📅 {juego[3] if juego[3] else 'N/A'}", 
                 font=("Arial", 9), 
-                fg="#88AAFF", 
-                bg="#1F1F1F"
+                fg=self.color_ps3_azul_claro, 
+                bg=self.color_ps3_gris_claro
             )
             año_label.pack()
             
             # Imagen
-            if juego[7]:
+            if juego[5]:  # imagen_ruta
                 try:
-                    imagen = Image.open(io.BytesIO(juego[7]))
-                    imagen = imagen.resize((100, 100), Image.Resampling.LANCZOS)
-                    imagen_tk = ImageTk.PhotoImage(imagen)
-                    img_label = tk.Label(juego_frame, image=imagen_tk, bg="#1F1F1F")
-                    img_label.image = imagen_tk
-                    img_label.pack(padx=10, pady=5)
+                    ruta_imagen = juego[5]
+                    if os.path.exists(ruta_imagen):
+                        imagen = Image.open(ruta_imagen)
+                        imagen = imagen.resize((100, 100), Image.Resampling.LANCZOS)
+                        imagen_tk = ImageTk.PhotoImage(imagen)
+                        img_label = tk.Label(juego_frame, image=imagen_tk, bg=self.color_ps3_gris_claro)
+                        img_label.image = imagen_tk
+                        img_label.pack(padx=10, pady=5)
+                    else:
+                        self._mostrar_placeholder_juego(juego_frame)
                 except Exception as e:
                     print(f"Error al cargar imagen: {e}")
                     self._mostrar_placeholder_juego(juego_frame)
@@ -239,13 +320,20 @@ class CatalogoJuegos:
                 self._mostrar_placeholder_juego(juego_frame)
             
             # Botón detalles
-            detalles_button = ttk.Button(
+            btn_detalles = tk.Button(
                 juego_frame, 
                 text="📖 Detalles", 
                 command=lambda j=juego: self.mostrar_detalles_juego(j),
-                width=14
+                bg=self.color_ps3_azul_claro,
+                fg=self.color_ps3_texto,
+                font=("Arial", 9, "bold"),
+                padx=5,
+                pady=2,
+                relief="flat",
+                activebackground=self.color_ps3_azul_medio,
+                activeforeground=self.color_ps3_texto
             )
-            detalles_button.pack(pady=5)
+            btn_detalles.pack(pady=5)
         
         # Actualizar el canvas
         self.juegos_frame.update_idletasks()
@@ -257,9 +345,11 @@ class CatalogoJuegos:
             frame, 
             text="🎮", 
             fg="#444444", 
-            bg="#1F1F1F", 
+            bg=self.color_ps3_gris_claro, 
             font=("Arial", 36)
         ).pack(padx=10, pady=10)
+    
+    # ============ MÉTODOS DE CONSULTA ============
     
     def cargar_juegos_por_genero(self, *args):
         """Carga juegos filtrados por género"""
@@ -289,18 +379,27 @@ class CatalogoJuegos:
         if generos:
             self.categoria_var.set(generos[0])
         self.cargar_juegos_por_genero()
-    
-    
 
-    # catalogo.py - Solo la parte corregida en mostrar_detalles_juego
-
+    def salir_aplicacion(self):
+        if messagebox.askyesno("Salir", "¿Estás seguro de que quieres salir?"):
+            # Cerrar la conexión a la base de datos
+            try:
+                self.comunicacion.cerrar_conexion()
+            except:
+                pass
+            # Cerrar la ventana principal
+            self.root.quit()
+            self.root.destroy()
+    
+    # ============ VENTANA DE DETALLES ============
+    
     def mostrar_detalles_juego(self, juego):
         """Muestra los detalles de un juego en una ventana emergente"""
         ventana = Toplevel(self.root)
         ventana.title(f"Detalles - {juego[1]}")
         ventana.geometry("800x600")
         ventana.minsize(500, 400)
-        ventana.config(bg="#1A1A1A")
+        ventana.config(bg=self.color_ps3_azul)
         
         self.root.withdraw()
         
@@ -309,28 +408,43 @@ class CatalogoJuegos:
             ventana.destroy()
         
         # Botón atrás
-        btn_atras = ttk.Button(ventana, text="← Atrás", command=cerrar)
+        btn_atras = tk.Button(
+            ventana, 
+            text="← Atrás", 
+            command=cerrar,
+            bg=self.color_ps3_azul_claro,
+            fg=self.color_ps3_texto,
+            font=("Arial", 10, "bold"),
+            padx=10,
+            relief="flat",
+            activebackground=self.color_ps3_azul_medio,
+            activeforeground=self.color_ps3_texto
+        )
         btn_atras.pack(anchor="nw", pady=10, padx=10)
         
         # Contenedor principal
-        contenedor = tk.Frame(ventana, bg="#2C2C2C", relief="groove", bd=3)
+        contenedor = tk.Frame(ventana, bg=self.color_ps3_gris_claro, relief="groove", bd=3)
         contenedor.pack(pady=10, padx=10, fill="both", expand=True)
         contenedor.grid_columnconfigure(0, weight=0)
         contenedor.grid_columnconfigure(1, weight=1)
         contenedor.grid_rowconfigure(0, weight=1)
         
         # Frame de imagen
-        frame_img = tk.Frame(contenedor, bg="#2C2C2C")
+        frame_img = tk.Frame(contenedor, bg=self.color_ps3_gris_claro)
         frame_img.grid(row=0, column=0, padx=20, pady=20, sticky="n")
         
-        if juego[7]:
+        if juego[5]:  # imagen_ruta
             try:
-                imagen = Image.open(io.BytesIO(juego[7]))
-                imagen = imagen.resize((280, 280), Image.Resampling.LANCZOS)
-                imagen_tk = ImageTk.PhotoImage(imagen)
-                lbl_img = tk.Label(frame_img, image=imagen_tk, bg="#2C2C2C")
-                lbl_img.image = imagen_tk
-                lbl_img.pack()
+                ruta_imagen = juego[5]
+                if os.path.exists(ruta_imagen):
+                    imagen = Image.open(ruta_imagen)
+                    imagen = imagen.resize((280, 280), Image.Resampling.LANCZOS)
+                    imagen_tk = ImageTk.PhotoImage(imagen)
+                    lbl_img = tk.Label(frame_img, image=imagen_tk, bg=self.color_ps3_gris_claro)
+                    lbl_img.image = imagen_tk
+                    lbl_img.pack()
+                else:
+                    self._mostrar_placeholder_detalles(frame_img)
             except Exception as e:
                 print(f"Error al cargar imagen: {e}")
                 self._mostrar_placeholder_detalles(frame_img)
@@ -338,7 +452,7 @@ class CatalogoJuegos:
             self._mostrar_placeholder_detalles(frame_img)
         
         # Frame de detalles
-        frame_detalles = tk.Frame(contenedor, bg="#1A1A1A", relief="sunken", bd=1)
+        frame_detalles = tk.Frame(contenedor, bg=self.color_ps3_gris, relief="sunken", bd=1)
         frame_detalles.grid(row=0, column=1, padx=20, pady=20, sticky="nsew")
         frame_detalles.grid_columnconfigure(0, weight=1)
         
@@ -346,25 +460,25 @@ class CatalogoJuegos:
         titulo_label = tk.Label(
             frame_detalles, 
             text=f"🎮 {juego[1]}", 
-            fg="#FFFFFF", 
-            bg="#1A1A1A", 
+            fg=self.color_ps3_texto, 
+            bg=self.color_ps3_gris, 
             font=("Arial", 16, "bold"),
             anchor="w"
         )
         titulo_label.pack(fill="x", pady=(10, 5))
         
         # Línea separadora
-        tk.Frame(frame_detalles, bg="#3A3A3A", height=2).pack(fill="x", pady=5)
+        tk.Frame(frame_detalles, bg=self.color_ps3_azul_claro, height=2).pack(fill="x", pady=5)
         
         # Descripción
-        desc_frame = tk.Frame(frame_detalles, bg="#1A1A1A")
+        desc_frame = tk.Frame(frame_detalles, bg=self.color_ps3_gris)
         desc_frame.pack(fill="both", expand=True, pady=5)
         
         desc_label = tk.Label(
             desc_frame, 
             text="📝 Descripción:", 
-            fg="#88AAFF", 
-            bg="#1A1A1A", 
+            fg=self.color_ps3_azul_claro, 
+            bg=self.color_ps3_gris, 
             font=("Arial", 11, "bold"),
             anchor="w"
         )
@@ -372,8 +486,8 @@ class CatalogoJuegos:
         
         desc_texto = tk.Text(
             desc_frame, 
-            fg="#FFFFFF", 
-            bg="#1A1A1A", 
+            fg=self.color_ps3_texto, 
+            bg=self.color_ps3_gris, 
             font=("Arial", 11), 
             wrap="word", 
             height=5, 
@@ -385,24 +499,25 @@ class CatalogoJuegos:
         desc_texto.pack(fill="both", expand=True, pady=(0, 10))
         
         # Línea separadora
-        tk.Frame(frame_detalles, bg="#3A3A3A", height=2).pack(fill="x", pady=5)
+        tk.Frame(frame_detalles, bg=self.color_ps3_azul_claro, height=2).pack(fill="x", pady=5)
         
         # Datos del juego
-        datos_frame = tk.Frame(frame_detalles, bg="#1A1A1A")
+        datos_frame = tk.Frame(frame_detalles, bg=self.color_ps3_gris)
         datos_frame.pack(fill="x", pady=5)
         
-        # === CORRECCIÓN DEL PRECIO ===
-        # Intentar convertir el precio a float, si falla mostrar "No disponible"
+        # Formatear precio (ahora es un número)
         try:
-            precio = float(juego[6]) if juego[6] else None
-            precio_texto = f"${precio:.2f}" if precio else "No disponible"
+            precio = float(juego[4]) if juego[4] is not None else None
+            if precio is not None:
+                precio_texto = f"${precio:.2f} USD"
+            else:
+                precio_texto = "No disponible"
         except (ValueError, TypeError):
             precio_texto = "No disponible"
         
         info_juego = [
-            ("🎯 Género", juego[3] if juego[3] else "No disponible"),
-            ("🖥️ Plataforma", juego[4] if juego[4] else "No disponible"),
-            ("📅 Año", juego[5] if juego[5] else "No disponible"),
+            ("🎯 Géneros", juego[6] if juego[6] else "No disponible"),
+            ("📅 Año", juego[3] if juego[3] else "No disponible"),
             ("💰 Precio", precio_texto)
         ]
         
@@ -410,8 +525,8 @@ class CatalogoJuegos:
             tk.Label(
                 datos_frame, 
                 text=f"{label}:", 
-                fg="#88AAFF", 
-                bg="#1A1A1A", 
+                fg=self.color_ps3_azul_claro, 
+                bg=self.color_ps3_gris, 
                 font=("Arial", 11, "bold"),
                 anchor="w"
             ).grid(row=i, column=0, sticky="w", pady=3, padx=(0, 10))
@@ -419,16 +534,21 @@ class CatalogoJuegos:
             tk.Label(
                 datos_frame, 
                 text=valor, 
-                fg="#FFFFFF", 
-                bg="#1A1A1A", 
+                fg=self.color_ps3_texto, 
+                bg=self.color_ps3_gris, 
                 font=("Arial", 11),
                 anchor="w"
             ).grid(row=i, column=1, sticky="w", pady=3)
     
     def _mostrar_placeholder_detalles(self, frame):
         """Muestra un placeholder cuando no hay imagen en detalles"""
-        tk.Label(frame, text="🎮", fg="#666666", bg="#2C2C2C", 
-                font=("Arial", 80)).pack()
+        tk.Label(
+            frame, 
+            text="🎮", 
+            fg="#666666", 
+            bg=self.color_ps3_gris_claro, 
+            font=("Arial", 80)
+        ).pack()
 
 # Punto de entrada
 if __name__ == "__main__":
