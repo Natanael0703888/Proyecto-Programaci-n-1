@@ -1,6 +1,3 @@
-# Detalles.py
-"""Ventana de detalles del juego"""
-
 import tkinter as tk
 from tkinter import Toplevel
 from PIL import Image, ImageTk
@@ -9,171 +6,229 @@ import os
 class VentanaDetalles:
     """Ventana emergente con detalles del juego"""
     
-    # Colores PS3
-    AZUL = "#003087"
-    AZUL_MEDIO = "#0055a4"
-    AZUL_CLARO = "#0070cc"
-    GRIS = "#1a1a1a"
-    GRIS_CLARO = "#2a2a2a"
-    TEXTO = "#ffffff"
-    TEXTO_SEC = "#999999"
-    
     def __init__(self, parent, juego):
         self.parent = parent
         self.juego = juego
         self.ventana = Toplevel(parent)
+        self._setup_colores()
         self.setup_ui()
+    
+    def _setup_colores(self):
+        """Define los colores de la ventana"""
+        self.COLORES = {
+            'fondo': '#0a0a1a',
+            'fondo_sec': '#141425',
+            'azul_ps3': '#003087',
+            'azul_medio': '#0055a4',
+            'azul_claro': '#0078d4',
+            'azul_brillante': '#0099ff',
+            'gris': '#1a1a2e',
+            'gris_claro': '#2a2a4a',
+            'texto': '#ffffff',
+            'texto_sec': '#8899bb',
+            'verde': '#00cc66',
+            'dorado': '#ffcc00',
+            'naranja': '#ff6600'
+        }
     
     def setup_ui(self):
         """Configura la ventana de detalles"""
-        self.ventana.title(f"Detalles - {self.juego.titulo}")
-        self.ventana.geometry("800x600")
-        self.ventana.minsize(500, 400)
-        self.ventana.config(bg=self.AZUL)
+        self.ventana.title(f"🎮 {self.juego.titulo}")
+        self.ventana.geometry("800x400")
+        self.ventana.minsize(600, 500)
+        self.ventana.config(bg=self.COLORES['fondo'])
         
-        # Ocultar ventana principal
         self.parent.withdraw()
-        
-        # Botón atrás
-        btn_atras = tk.Button(
-            self.ventana,
-            text="← Atrás",
-            command=self.cerrar,
-            bg=self.AZUL_CLARO,
-            fg=self.TEXTO,
-            font=("Arial", 10, "bold"),
-            padx=10,
-            relief="flat",
-            activebackground=self.AZUL_MEDIO,
-            activeforeground=self.TEXTO
-        )
-        btn_atras.pack(anchor="nw", pady=10, padx=10)
         
         # Contenedor principal
         contenedor = tk.Frame(
             self.ventana,
-            bg=self.GRIS_CLARO,
-            relief="groove",
-            bd=3
+            bg=self.COLORES['fondo_sec'],
+            relief="flat",
+            bd=0
         )
-        contenedor.pack(pady=10, padx=10, fill="both", expand=True)
-        contenedor.grid_columnconfigure(0, weight=0)
-        contenedor.grid_columnconfigure(1, weight=1)
-        contenedor.grid_rowconfigure(0, weight=1)
+        contenedor.pack(fill="both", expand=True, padx=20, pady=20)
         
-        # Frame de imagen
-        self._mostrar_imagen(contenedor)
+        # Botón atrás
+        self._crear_boton_atras(contenedor)
         
-        # Frame de detalles
-        self._mostrar_detalles(contenedor)
+        # Contenido
+        contenido = tk.Frame(contenedor, bg=self.COLORES['fondo_sec'])
+        contenido.pack(fill="both", expand=True, pady=10)
+        
+        # Frame de imagen (izquierda)
+        frame_img = tk.Frame(contenido, bg=self.COLORES['fondo_sec'])
+        frame_img.pack(side=tk.LEFT, fill="both", expand=True, padx=(0, 20))
+        
+        self._mostrar_imagen(frame_img)
+        
+        # Frame de detalles (derecha)
+        frame_detalles = tk.Frame(contenido, bg=self.COLORES['fondo_sec'])
+        frame_detalles.pack(side=tk.RIGHT, fill="both", expand=True)
+        
+        self._mostrar_detalles(frame_detalles)
     
-    def _mostrar_imagen(self, contenedor):
-        """Muestra la imagen del juego"""
-        frame_img = tk.Frame(contenedor, bg=self.GRIS_CLARO)
-        frame_img.grid(row=0, column=0, padx=20, pady=20, sticky="n")
+    def _crear_boton_atras(self, parent):
+        """Crea el botón de regreso"""
+        btn_frame = tk.Frame(parent, bg=self.COLORES['fondo_sec'])
+        btn_frame.pack(fill="x")
+        
+        btn = tk.Button(
+            btn_frame,
+            text="← Volver al catálogo",
+            command=self.cerrar,
+            bg=self.COLORES['azul_ps3'],
+            fg=self.COLORES['texto'],
+            font=("Arial", 10, "bold"),
+            padx=15,
+            pady=8,
+            relief="flat",
+            bd=0,
+            cursor="hand2",
+            activebackground=self.COLORES['azul_claro'],
+            activeforeground=self.COLORES['texto']
+        )
+        btn.pack(side=tk.LEFT)
+        
+        # Efecto hover
+        def on_enter(e):
+            btn.config(bg=self.COLORES['azul_claro'])
+        
+        def on_leave(e):
+            btn.config(bg=self.COLORES['azul_ps3'])
+        
+        btn.bind("<Enter>", on_enter)
+        btn.bind("<Leave>", on_leave)
+    
+    def _mostrar_imagen(self, parent):
+        """Muestra la imagen del juego con marco"""
+        marco = tk.Frame(
+            parent,
+            bg=self.COLORES['gris'],
+            relief="flat",
+            bd=0,
+            highlightbackground=self.COLORES['azul_medio'],
+            highlightthickness=2
+        )
+        marco.pack(fill="both", expand=True, pady=20)
         
         if self.juego.imagen and os.path.exists(self.juego.imagen):
             try:
                 imagen = Image.open(self.juego.imagen)
-                imagen = imagen.resize((280, 280), Image.Resampling.LANCZOS)
+                imagen = imagen.resize((300, 300), Image.Resampling.LANCZOS)
                 imagen_tk = ImageTk.PhotoImage(imagen)
-                lbl = tk.Label(frame_img, image=imagen_tk, bg=self.GRIS_CLARO)
+                lbl = tk.Label(marco, image=imagen_tk, bg=self.COLORES['gris'])
                 lbl.image = imagen_tk
-                lbl.pack()
+                lbl.pack(expand=True)
                 return
             except:
                 pass
         
-        # Placeholder
+        # Placeholder mejorado
         tk.Label(
-            frame_img,
+            marco,
             text="🎮",
-            fg="#666666",
-            bg=self.GRIS_CLARO,
-            font=("Arial", 80)
-        ).pack()
+            fg=self.COLORES['texto_sec'],
+            bg=self.COLORES['gris'],
+            font=("Arial", 100)
+        ).pack(expand=True)
     
-    def _mostrar_detalles(self, contenedor):
+    def _mostrar_detalles(self, parent):
         """Muestra los detalles del juego"""
-        frame = tk.Frame(
-            contenedor,
-            bg=self.GRIS,
-            relief="sunken",
-            bd=1
+        # Título
+        tk.Label(
+            parent,
+            text=self.juego.titulo,
+            fg=self.COLORES['azul_brillante'],
+            bg=self.COLORES['fondo_sec'],
+            font=("Arial", 20, "bold"),
+            anchor="w"
+        ).pack(fill="x", pady=(0, 5))
+        
+        # Línea decorativa
+        tk.Frame(parent, bg=self.COLORES['azul_claro'], height=2).pack(fill="x", pady=5)
+        
+        # Descripción
+        tk.Label(
+            parent,
+            text="📝 Descripción",
+            fg=self.COLORES['texto_sec'],
+            bg=self.COLORES['fondo_sec'],
+            font=("Arial", 12, "bold"),
+            anchor="w"
+        ).pack(fill="x", pady=(10, 5))
+        
+        desc_frame = tk.Frame(
+            parent,
+            bg=self.COLORES['gris'],
+            relief="flat",
+            bd=0,
+            highlightbackground=self.COLORES['azul_medio'],
+            highlightthickness=1
         )
-        frame.grid(row=0, column=1, padx=20, pady=20, sticky="nsew")
-        frame.grid_columnconfigure(0, weight=0)  # Columna etiquetas
-        frame.grid_columnconfigure(1, weight=1)  # Columna valores
-        frame.grid_rowconfigure(3, weight=1)     # Fila de descripción
+        desc_frame.pack(fill="both", expand=True, pady=(0, 10))
         
-        # Título (ocupa 2 columnas)
-        tk.Label(
-            frame,
-            text=f"🎮 {self.juego.titulo}",
-            fg=self.TEXTO,
-            bg=self.GRIS,
-            font=("Arial", 16, "bold"),
-            anchor="w"
-        ).grid(row=0, column=0, columnspan=2, sticky="w", pady=(10, 5), padx=10)
-        
-        # Separador
-        tk.Frame(frame, bg=self.AZUL_CLARO, height=2).grid(row=1, column=0, columnspan=2, sticky="ew", pady=5, padx=10)
-        
-        # Descripción - Etiqueta
-        tk.Label(
-            frame,
-            text="📝 Descripción:",
-            fg=self.AZUL_CLARO,
-            bg=self.GRIS,
-            font=("Arial", 11, "bold"),
-            anchor="w"
-        ).grid(row=2, column=0, columnspan=2, sticky="w", pady=(10, 0), padx=10)
-        
-        # Descripción - Texto
         desc_texto = tk.Text(
-            frame,
-            fg=self.TEXTO,
-            bg=self.GRIS,
+            desc_frame,
+            fg=self.COLORES['texto'],
+            bg=self.COLORES['gris'],
             font=("Arial", 11),
             wrap="word",
-            height=5,
+            height=4,
             bd=0,
-            relief="flat"
+            relief="flat",
+            padx=10,
+            pady=10
         )
         desc_texto.insert("1.0", self.juego.descripcion or "No disponible")
         desc_texto.config(state=tk.DISABLED)
-        desc_texto.grid(row=3, column=0, columnspan=2, sticky="nsew", pady=(0, 10), padx=10)
+        desc_texto.pack(fill="both", expand=True)
         
-        # Separador
-        tk.Frame(frame, bg=self.AZUL_CLARO, height=2).grid(row=4, column=0, columnspan=2, sticky="ew", pady=5, padx=10)
+        # Línea decorativa
+        tk.Frame(parent, bg=self.COLORES['azul_claro'], height=1).pack(fill="x", pady=5)
         
         # Datos del juego
         datos = [
-            ("🎯 Géneros", self.juego.generos or "No disponible"),
-            ("📅 Año", self.juego.anio or "No disponible"),
-            ("💰 Precio", self.juego.precio_formateado)
+            ("🎯 Géneros: ", self.juego.generos or "No disponible"),
+            ("📅 Año: ", str(self.juego.anio or "No disponible")),
+            ("💰 Precio: ", self.juego.precio_formateado)
         ]
         
+        # Frame para datos
+        datos_frame = tk.Frame(parent, bg=self.COLORES['fondo_sec'])
+        datos_frame.pack(fill="x", pady=10)
+        
         for i, (label, valor) in enumerate(datos):
-            # Etiqueta (columna 0)
-            tk.Label(
-                frame,
-                text=f"{label}:",
-                fg=self.AZUL_CLARO,
-                bg=self.GRIS,
-                font=("Arial", 11, "bold"),
-                anchor="w"
-            ).grid(row=i+5, column=0, sticky="w", pady=3, padx=(10, 5))
+            # Fila
+            fila = tk.Frame(datos_frame, bg=self.COLORES['fondo_sec'])
+            fila.pack(fill="x", pady=3)
             
-            # Valor (columna 1)
+            # Etiqueta
             tk.Label(
-                frame,
+                fila,
+                text=label,
+                fg=self.COLORES['texto_sec'],
+                bg=self.COLORES['fondo_sec'],
+                font=("Arial", 11, "bold"),
+                width=15,
+                anchor="w"
+            ).pack(side=tk.LEFT)
+            
+            # Valor
+            color_valor = self.COLORES['texto']
+            if "Precio" in label and "USD" in str(valor):
+                color_valor = self.COLORES['verde']
+            elif "Año" in label and valor != "No disponible":
+                color_valor = self.COLORES['dorado']
+            
+            tk.Label(
+                fila,
                 text=valor,
-                fg=self.TEXTO,
-                bg=self.GRIS,
+                fg=color_valor,
+                bg=self.COLORES['fondo_sec'],
                 font=("Arial", 11),
                 anchor="w"
-            ).grid(row=i+5, column=1, sticky="w", pady=3, padx=(5, 10))
+            ).pack(side=tk.LEFT)
     
     def cerrar(self):
         """Cierra la ventana y vuelve al menú principal"""
