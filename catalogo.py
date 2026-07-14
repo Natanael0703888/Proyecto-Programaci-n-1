@@ -1,6 +1,3 @@
-# catalogo.py
-"""Catálogo de juegos PS3 - Ventana principal"""
-
 import tkinter as tk
 from tkinter import ttk, messagebox
 from PIL import Image, ImageTk
@@ -117,8 +114,8 @@ class CatalogoJuegos:
         # Botón Buscar con icono
         btn_buscar = self._crear_boton(
             frame_busqueda,
-            text="🔍 Buscar",
-            command=self.buscar_por_titulo,
+            texto="🔍 Buscar",
+            comando=self.buscar_por_titulo,
             color=self.COLORES['azul_claro'],
             color_hover=self.COLORES['azul_brillante']
         )
@@ -127,8 +124,8 @@ class CatalogoJuegos:
         # Botón Limpiar
         btn_limpiar = self._crear_boton(
             frame_busqueda,
-            text="✕",
-            command=self.limpiar_busqueda,
+            texto="✕",
+            comando=self.limpiar_busqueda,
             color=self.COLORES['gris_claro'],
             color_hover=self.COLORES['texto_sec'],
             ancho=3
@@ -152,12 +149,25 @@ class CatalogoJuegos:
         # Botón Inicio
         btn_inicio = self._crear_boton(
             frame_izquierda,
-            text="🏠 Inicio",
-            command=self.ir_a_inicio,
+            texto="🏠 Inicio",
+            comando=self.ir_a_inicio,
             color=self.COLORES['azul_ps3'],
             color_hover=self.COLORES['azul_claro']
         )
         btn_inicio.pack(side=tk.LEFT, padx=2)
+        
+        # Separador
+        tk.Frame(frame_izquierda, bg=self.COLORES['gris_claro'], width=1, height=30).pack(side=tk.LEFT, padx=10)
+        
+        # Botón Favoritos (NUEVO)
+        btn_favoritos = self._crear_boton(
+            frame_izquierda,
+            texto="⭐ Favoritos",
+            comando=self.mostrar_favoritos,
+            color=self.COLORES['dorado'],
+            color_hover="#ffdd44"
+        )
+        btn_favoritos.pack(side=tk.LEFT, padx=2)
         
         # Separador
         tk.Frame(frame_izquierda, bg=self.COLORES['gris_claro'], width=1, height=30).pack(side=tk.LEFT, padx=10)
@@ -207,8 +217,8 @@ class CatalogoJuegos:
         # Botón Buscar por Año
         btn_buscar_anio = self._crear_boton(
             frame_izquierda,
-            text="📅 Filtrar",
-            command=self.buscar_por_anio,
+            texto="📅 Filtrar",
+            comando=self.buscar_por_anio,
             color=self.COLORES['naranja'],
             color_hover="#ff8800"
         )
@@ -221,8 +231,8 @@ class CatalogoJuegos:
         # Botón Salir
         btn_salir = self._crear_boton(
             frame_derecha,
-            text="✕ Salir",
-            command=self.salir,
+            texto="✕ Salir",
+            comando=self.salir,
             color=self.COLORES['rojo'],
             color_hover="#ff0044"
         )
@@ -282,14 +292,14 @@ class CatalogoJuegos:
         )
         self.etiqueta_contador.grid(row=3, column=0, sticky="se", padx=30, pady=(0, 10))
     
-    def _crear_boton(self, padre, text, command, color, color_hover=None, ancho=None):
+    def _crear_boton(self, padre, texto, comando, color, color_hover=None, ancho=None):
         """Crea un botón con estilo moderno"""
         color_hover = color_hover or color
-    
+        
         btn = tk.Button(
             padre,
-            text=text,  # <--- Ahora usa 'text' en lugar de 'texto'
-            command=command,  # <--- Ahora usa 'command' en lugar de 'comando'
+            text=texto,
+            command=comando,
             bg=color,
             fg=self.COLORES['texto'],
             font=("Arial", 9, "bold"),
@@ -302,17 +312,17 @@ class CatalogoJuegos:
             activeforeground=self.COLORES['texto'],
             width=ancho
         )
-    
-    # Efecto hover
+        
+        # Efecto hover
         def al_entrar(e):
             btn.config(bg=color_hover)
-    
+        
         def al_salir(e):
             btn.config(bg=color)
-    
+        
         btn.bind("<Enter>", al_entrar)
         btn.bind("<Leave>", al_salir)
-    
+        
         return btn
     
     def _vincular_rueda_mouse(self):
@@ -594,6 +604,18 @@ class CatalogoJuegos:
         self.campo_busqueda.delete(0, tk.END)
         # Recargar con el género actual seleccionado
         self.cargar_por_genero()
+    
+    def mostrar_favoritos(self):
+        """Muestra mensaje de que la función requiere pago"""
+        messagebox.showinfo(
+            "⭐ Favoritos",
+            "Para usar esta función necesitas tener una cuenta y pagar $1.99\n\n"
+            "💳 Suscríbete para acceder a:\n"
+            "• Guardar tus juegos favoritos\n"
+            "• Lista personalizada\n"
+            "• Recomendaciones exclusivas\n"
+            "• Y mucho más..."
+        )
     
     def abrir_detalles(self, juego):
         """Abre la ventana de detalles"""
